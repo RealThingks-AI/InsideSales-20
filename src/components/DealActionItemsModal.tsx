@@ -166,7 +166,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
       if (error) throw error;
       
-      setActionItems(data || []);
+      setActionItems((data || []) as UnifiedActionItem[]);
     } catch (error) {
       toast({
         title: "Error",
