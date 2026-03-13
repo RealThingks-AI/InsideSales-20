@@ -129,6 +129,12 @@ export function CampaignOutreachTab({ campaignId, campaignEndDate, initialTempla
   };
 
   const handleSendEmail = async () => {
+    // End-date enforcement
+    if (campaignEndDate && new Date(campaignEndDate) < new Date()) {
+      toast({ title: 'Campaign has ended', description: 'Cannot send emails after the campaign end date.', variant: 'destructive' });
+      return;
+    }
+
     if (!sendForm.contact_id || !sendForm.subject || !sendForm.body) {
       toast({ title: 'Please fill in contact, subject and body', variant: 'destructive' });
       return;
