@@ -812,7 +812,7 @@ export const DealExpandedPanel = ({
       if (error) throw error;
 
       // Log the action item creation with actual ID
-      await logCreate('action_items', insertedItem?.id || '', {
+      await logCreate('action_items', (insertedItem as any)?.id || '', {
         title: actionTitle.trim(),
         module_type: 'deals',
         module_id: deal.id,
