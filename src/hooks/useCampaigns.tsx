@@ -294,6 +294,30 @@ export function useCampaignCommunications(campaignId: string | null) {
       } as any);
       if (error) throw error;
 
+      // Cross-link to contact_activities when contact is specified
+      if (comm.contact_id) {
+        await supabase.from('contact_activities').insert({
+          contact_id: comm.contact_id,
+          activity_type: comm.communication_type || 'Other',
+          subject: comm.subject || `Campaign ${comm.communication_type || 'Communication'}`,
+          description: comm.notes || comm.body || null,
+          outcome: comm.outcome || comm.email_status || comm.call_outcome || comm.linkedin_status || null,
+          created_by: user!.id,
+        } as any);
+      }
+
+      // Cross-link to account_activities when account is specified
+      if (comm.account_id) {
+        await supabase.from('account_activities').insert({
+          account_id: comm.account_id,
+          activity_type: comm.communication_type || 'Other',
+          subject: comm.subject || `Campaign ${comm.communication_type || 'Communication'}`,
+          description: comm.notes || comm.body || null,
+          outcome: comm.outcome || comm.email_status || comm.call_outcome || comm.linkedin_status || null,
+          created_by: user!.id,
+        } as any);
+      }
+
       // Cross-link email communications to email_history for activity tracking
       if (comm.communication_type === 'Email' && comm.contact_id) {
         const { data: contact } = await supabase

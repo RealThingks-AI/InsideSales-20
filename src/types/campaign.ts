@@ -107,7 +107,7 @@ export interface CampaignPhoneScript {
   created_at: string;
 }
 
-export const CAMPAIGN_STATUSES = ['Draft', 'Active', 'Paused', 'Completed', 'Cancelled'] as const;
+export const CAMPAIGN_STATUSES = ['Draft', 'Active', 'Paused', 'Completed', 'Cancelled', 'Archived'] as const;
 export const CAMPAIGN_TYPES = ['Email', 'LinkedIn', 'Phone', 'Multi-Channel'] as const;
 export const CAMPAIGN_ACCOUNT_STATUSES = ['Not Contacted', 'Contacted', 'Responded', 'Deal Created'] as const;
 export const CAMPAIGN_CONTACT_STAGES = ['Not Contacted', 'Email Sent', 'Phone Contacted', 'LinkedIn Contacted', 'Responded', 'Qualified'] as const;
