@@ -135,7 +135,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
                 <label key={a.id} className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent cursor-pointer">
                   <Checkbox checked={selectedIds.has(a.id)} onCheckedChange={() => toggleSelect(a.id)} className="h-3.5 w-3.5" />
                   <span className="truncate flex-1">
-                    {a.account_name}
+                    {a.company_name}
                     {a.industry && <span className="text-muted-foreground ml-1">· {a.industry}</span>}
                     {a.country && <span className="text-muted-foreground ml-1">· {a.country}</span>}
                   </span>
