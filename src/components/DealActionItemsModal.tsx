@@ -157,7 +157,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
     try {
       setLoading(true);
       // Fetch from unified action_items table
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('action_items')
         .select('*')
         .eq('module_type', 'deals')
