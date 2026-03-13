@@ -102,7 +102,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from('action_items').update({ status }).eq('id', id);
+      const { error } = await (supabase as any).from('action_items').update({ status }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
