@@ -136,7 +136,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
     }
   };
 
-  const selectedAccountName = accountsQuery.data?.find(a => a.id === accountId)?.account_name;
+  const selectedAccountName = accountsQuery.data?.find(a => a.id === accountId)?.company_name;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
