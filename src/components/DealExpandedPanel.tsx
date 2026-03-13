@@ -424,7 +424,7 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
       role,
       created_by: user?.id
     };
-    const { data, error } = await supabase.from("deal_stakeholders").insert(insertData).select().single();
+    const { data, error } = await (supabase as any).from("deal_stakeholders").insert(insertData).select().single();
     if (error) {console.error("Error adding stakeholder:", error);return;}
     await logStakeholderCreate('deal_stakeholders', data?.id || '', { ...insertData, contact_name: contact.contact_name, deal_name: deal.deal_name });
     queryClient.invalidateQueries({ queryKey: ["deal-stakeholders", deal.id] });
