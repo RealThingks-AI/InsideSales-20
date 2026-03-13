@@ -156,7 +156,7 @@ export function useCampaignAccounts(campaignId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('campaign_accounts')
-        .select('*, accounts(account_name, industry, country, account_owner)')
+        .select('*, accounts(company_name, industry, country, account_owner)')
         .eq('campaign_id', campaignId!);
       if (error) throw error;
       return data as CampaignAccount[];
