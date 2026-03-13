@@ -998,7 +998,7 @@ export const DealExpandedPanel = ({
   const handleStatusChange = async (id: string, status: string) => {
     const item = actionItems.find((i) => i.id === id);
     const oldStatus = item?.status;
-    await supabase.from("action_items").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
 
     // Log ALL status changes via useCRUDAudit
     await logUpdate('action_items', id, { status }, { status: oldStatus, title: item?.title, deal_name: deal.deal_name });
