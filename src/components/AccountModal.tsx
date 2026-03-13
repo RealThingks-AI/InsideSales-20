@@ -150,7 +150,7 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
       } else {
         // CREATE: set account_owner, created_by, modified_by
         const insertData = {
-          account_name: data.account_name,
+          company_name: data.account_name,
           phone: data.phone || null,
           website: data.website || null,
           industry: data.industry || null,

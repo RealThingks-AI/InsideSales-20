@@ -445,10 +445,10 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
     if (dealAccountId) {
       const { data: account } = await supabase
         .from("accounts")
-        .select("account_name")
+        .select("company_name")
         .eq("id", dealAccountId)
         .single();
-      companyName = account?.account_name || deal.customer_name || null;
+      companyName = (account as any)?.company_name || deal.customer_name || null;
     } else {
       companyName = deal.customer_name || null;
     }
