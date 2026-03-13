@@ -398,7 +398,7 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
   const { data: stakeholders = [] } = useQuery({
     queryKey: ["deal-stakeholders", deal.id],
     queryFn: async () => {
-      const { data, error } = await supabase.
+      const { data, error } = await (supabase as any).
       from("deal_stakeholders").
       select("*").
       eq("deal_id", deal.id);
