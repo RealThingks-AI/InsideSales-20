@@ -49,7 +49,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
 
   const availableAccounts = (allAccountsQuery.data || []).filter(a => {
     if (existingIds.has(a.id)) return false;
-    if (!a.account_name.toLowerCase().includes(accountSearch.toLowerCase())) return false;
+    if (!a.company_name.toLowerCase().includes(accountSearch.toLowerCase())) return false;
     if (industryFilter !== 'all' && a.industry !== industryFilter) return false;
     if (countryFilter !== 'all' && a.country !== countryFilter) return false;
     return true;
