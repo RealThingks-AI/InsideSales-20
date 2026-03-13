@@ -75,7 +75,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
 
   const createItem = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('action_items').insert({
+      const { error } = await (supabase as any).from('action_items').insert({
         title: form.title,
         description: form.description || null,
         priority: form.priority,
