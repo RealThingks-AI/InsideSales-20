@@ -41,7 +41,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
   const accountsQuery = useQuery({
     queryKey: ['accounts_for_deal_convert'],
     queryFn: async () => {
-      const { data } = await supabase.from('accounts').select('id, account_name').order('account_name');
+      const { data } = await supabase.from('accounts').select('id, company_name').order('company_name');
       return data || [];
     },
     enabled: open,
