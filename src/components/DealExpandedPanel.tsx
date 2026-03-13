@@ -433,7 +433,7 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
   const handleRemoveContact = async (stakeholderId: string) => {
     const stakeholder = stakeholders?.find(s => s.id === stakeholderId);
     const contactName = stakeholder ? contactNames[stakeholder.contact_id] : undefined;
-    await supabase.from("deal_stakeholders").delete().eq("id", stakeholderId);
+    await (supabase as any).from("deal_stakeholders").delete().eq("id", stakeholderId);
     await logStakeholderDelete('deal_stakeholders', stakeholderId, { ...stakeholder, contact_name: contactName, deal_name: deal.deal_name });
     queryClient.invalidateQueries({ queryKey: ["deal-stakeholders", deal.id] });
   };

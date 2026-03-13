@@ -273,7 +273,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
   const handleDelete = async (item: UnifiedActionItem) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('action_items')
         .delete()
         .eq('id', item.id);
