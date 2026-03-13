@@ -1021,7 +1021,7 @@ export const DealExpandedPanel = ({
   const handleDueDateChange = async (id: string, date: string | null) => {
     const item = actionItems.find((i) => i.id === id);
     const oldDueDate = item?.due_date;
-    await supabase.from("action_items").update({ due_date: date, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ due_date: date, updated_at: new Date().toISOString() }).eq("id", id);
     await logUpdate('action_items', id, { due_date: date }, { due_date: oldDueDate, title: item?.title, deal_name: deal.deal_name });
     invalidateActionItems();
   };
