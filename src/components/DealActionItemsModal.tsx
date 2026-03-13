@@ -232,7 +232,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
         });
       } else {
         // Create new item in unified table
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('action_items')
           .insert([actionItemData])
           .select()
