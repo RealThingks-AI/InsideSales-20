@@ -173,7 +173,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
             <TableBody>
               {paginatedItems.map(ca => (
                 <TableRow key={ca.id}>
-                  <TableCell className="font-medium text-sm">{ca.accounts?.account_name || '—'}</TableCell>
+                  <TableCell className="font-medium text-sm">{ca.accounts?.company_name || '—'}</TableCell>
                   <TableCell className="text-sm">{ca.accounts?.industry || '—'}</TableCell>
                   <TableCell className="text-sm">{ca.accounts?.country || '—'}</TableCell>
                   <TableCell>
