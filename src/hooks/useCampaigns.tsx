@@ -63,6 +63,8 @@ export function useCampaigns() {
 
   const deleteCampaign = useMutation({
     mutationFn: async (id: string) => {
+      // Clean up orphaned action items linked to this campaign
+      await supabase.from('action_items').delete().eq('module_type', 'campaigns').eq('module_id', id);
       const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;
     },
