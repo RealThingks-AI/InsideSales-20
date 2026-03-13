@@ -165,7 +165,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
               </SelectTrigger>
               <SelectContent>
                 {accountsQuery.data?.map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.account_name}</SelectItem>
+                  <SelectItem key={a.id} value={a.id}>{a.company_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

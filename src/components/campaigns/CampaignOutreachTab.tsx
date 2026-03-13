@@ -357,7 +357,7 @@ export function CampaignOutreachTab({ campaignId, campaignEndDate, initialTempla
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
                   {accounts.map(a => (
-                    <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.account_name || a.account_id}</SelectItem>
+                    <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.company_name || a.account_id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
