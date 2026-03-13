@@ -798,7 +798,7 @@ export const DealExpandedPanel = ({
 
     setIsSavingLog(true);
     try {
-      const { data: insertedItem, error } = await supabase.from("action_items").insert({
+      const { data: insertedItem, error } = await (supabase as any).from("action_items").insert({
         title: actionTitle.trim(),
         module_type: "deals",
         module_id: deal.id,
