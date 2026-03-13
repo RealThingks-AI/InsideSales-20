@@ -1013,7 +1013,7 @@ export const DealExpandedPanel = ({
   const handleAssignedToChange = async (id: string, userId: string | null) => {
     const item = actionItems.find((i) => i.id === id);
     const oldAssignedTo = item?.assigned_to;
-    await supabase.from("action_items").update({ assigned_to: userId, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ assigned_to: userId, updated_at: new Date().toISOString() }).eq("id", id);
     await logUpdate('action_items', id, { assigned_to: userId }, { assigned_to: oldAssignedTo, title: item?.title, deal_name: deal.deal_name });
     invalidateActionItems();
   };
