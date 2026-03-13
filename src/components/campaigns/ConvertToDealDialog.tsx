@@ -41,7 +41,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
   const accountsQuery = useQuery({
     queryKey: ['accounts_for_deal_convert'],
     queryFn: async () => {
-      const { data } = await supabase.from('accounts').select('id, account_name').order('account_name');
+      const { data } = await supabase.from('accounts').select('id, company_name').order('company_name');
       return data || [];
     },
     enabled: open,
@@ -136,7 +136,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
     }
   };
 
-  const selectedAccountName = accountsQuery.data?.find(a => a.id === accountId)?.account_name;
+  const selectedAccountName = accountsQuery.data?.find(a => a.id === accountId)?.company_name;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -165,7 +165,7 @@ export function ConvertToDealDialog({ open, onOpenChange, campaignId, campaignCo
               </SelectTrigger>
               <SelectContent>
                 {accountsQuery.data?.map(a => (
-                  <SelectItem key={a.id} value={a.id}>{a.account_name}</SelectItem>
+                  <SelectItem key={a.id} value={a.id}>{a.company_name}</SelectItem>
                 ))}
               </SelectContent>
             </Select>

@@ -32,7 +32,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
   const allAccountsQuery = useQuery({
     queryKey: ['all_accounts_for_campaign'],
     queryFn: async () => {
-      const { data } = await supabase.from('accounts').select('id, account_name, industry, country').order('account_name');
+      const { data } = await supabase.from('accounts').select('id, company_name, industry, country').order('company_name');
       return data || [];
     },
     enabled: addOpen,
@@ -49,7 +49,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
 
   const availableAccounts = (allAccountsQuery.data || []).filter(a => {
     if (existingIds.has(a.id)) return false;
-    if (!a.account_name.toLowerCase().includes(accountSearch.toLowerCase())) return false;
+    if (!a.company_name.toLowerCase().includes(accountSearch.toLowerCase())) return false;
     if (industryFilter !== 'all' && a.industry !== industryFilter) return false;
     if (countryFilter !== 'all' && a.country !== countryFilter) return false;
     return true;
@@ -135,7 +135,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
                 <label key={a.id} className="flex items-center gap-2 w-full px-2 py-1.5 text-xs rounded hover:bg-accent cursor-pointer">
                   <Checkbox checked={selectedIds.has(a.id)} onCheckedChange={() => toggleSelect(a.id)} className="h-3.5 w-3.5" />
                   <span className="truncate flex-1">
-                    {a.account_name}
+                    {a.company_name}
                     {a.industry && <span className="text-muted-foreground ml-1">· {a.industry}</span>}
                     {a.country && <span className="text-muted-foreground ml-1">· {a.country}</span>}
                   </span>
@@ -173,7 +173,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
             <TableBody>
               {paginatedItems.map(ca => (
                 <TableRow key={ca.id}>
-                  <TableCell className="font-medium text-sm">{ca.accounts?.account_name || '—'}</TableCell>
+                  <TableCell className="font-medium text-sm">{ca.accounts?.company_name || '—'}</TableCell>
                   <TableCell className="text-sm">{ca.accounts?.industry || '—'}</TableCell>
                   <TableCell className="text-sm">{ca.accounts?.country || '—'}</TableCell>
                   <TableCell>

@@ -60,7 +60,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
   const query = useQuery({
     queryKey: ['campaign_action_items', campaignId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('action_items')
         .select('*')
         .eq('module_type', 'campaigns')
@@ -68,14 +68,14 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
         .is('archived_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: !!user,
   });
 
   const createItem = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from('action_items').insert({
+      const { error } = await (supabase as any).from('action_items').insert({
         title: form.title,
         description: form.description || null,
         priority: form.priority,
@@ -102,7 +102,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
-      const { error } = await supabase.from('action_items').update({ status }).eq('id', id);
+      const { error } = await (supabase as any).from('action_items').update({ status }).eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {
@@ -113,7 +113,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
 
   const deleteItem = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('action_items').delete().eq('id', id);
+      const { error } = await (supabase as any).from('action_items').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

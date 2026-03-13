@@ -135,7 +135,7 @@ export function CampaignDetailPanel({ campaign, onClose, onEdit }: Props) {
           </TabsContent>
 
           <TabsContent value="outreach" className="mt-0">
-            <CampaignOutreachTab campaignId={campaign.id} initialTemplateId={pendingTemplateId} onTemplatePicked={() => setPendingTemplateId(null)} />
+            <CampaignOutreachTab campaignId={campaign.id} campaignEndDate={campaign.end_date} initialTemplateId={pendingTemplateId} onTemplatePicked={() => setPendingTemplateId(null)} />
           </TabsContent>
 
           <TabsContent value="templates" className="mt-0">

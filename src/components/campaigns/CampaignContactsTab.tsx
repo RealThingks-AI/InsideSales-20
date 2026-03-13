@@ -64,11 +64,11 @@ export function CampaignContactsTab({ campaignId }: Props) {
     queryFn: async () => {
       if (!campaignAccountIds.size) return {};
       // Get all contacts linked to the campaign's accounts via leads/contacts tables
-      // contacts table has company_name but we join via accounts table account_name
-      // Build a map: account_id -> account_name
+      // contacts table has company_name but we join via accounts table company_name
+      // Build a map: account_id -> company_name
       const map: Record<string, string> = {};
       campaignAccounts.forEach(ca => {
-        if (ca.accounts?.account_name) map[ca.account_id] = ca.accounts.account_name;
+        if (ca.accounts?.company_name) map[ca.account_id] = ca.accounts.company_name;
       });
       return map;
     },
@@ -150,7 +150,7 @@ export function CampaignContactsTab({ campaignId }: Props) {
                   <SelectContent>
                     <SelectItem value="all">All Accounts</SelectItem>
                     {campaignAccounts.map(a => (
-                      <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.account_name || a.account_id}</SelectItem>
+                      <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.company_name || a.account_id}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>

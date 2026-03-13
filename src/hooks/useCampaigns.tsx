@@ -63,6 +63,8 @@ export function useCampaigns() {
 
   const deleteCampaign = useMutation({
     mutationFn: async (id: string) => {
+      // Clean up orphaned action items linked to this campaign
+      await supabase.from('action_items').delete().eq('module_type', 'campaigns').eq('module_id', id);
       const { error } = await supabase.from('campaigns').delete().eq('id', id);
       if (error) throw error;
     },
@@ -154,7 +156,7 @@ export function useCampaignAccounts(campaignId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('campaign_accounts')
-        .select('*, accounts(account_name, industry, country, account_owner)')
+        .select('*, accounts(company_name, industry, country, account_owner)')
         .eq('campaign_id', campaignId!);
       if (error) throw error;
       return data as CampaignAccount[];
@@ -273,7 +275,7 @@ export function useCampaignCommunications(campaignId: string | null) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('campaign_communications')
-        .select('*, contacts(contact_name), accounts(account_name)')
+        .select('*, contacts(contact_name), accounts(company_name)')
         .eq('campaign_id', campaignId!)
         .order('communication_date', { ascending: false });
       if (error) throw error;
@@ -291,6 +293,30 @@ export function useCampaignCommunications(campaignId: string | null) {
         created_by: user!.id,
       } as any);
       if (error) throw error;
+
+      // Cross-link to contact_activities when contact is specified
+      if (comm.contact_id) {
+        await supabase.from('contact_activities').insert({
+          contact_id: comm.contact_id,
+          activity_type: comm.communication_type || 'Other',
+          subject: comm.subject || `Campaign ${comm.communication_type || 'Communication'}`,
+          description: comm.notes || comm.body || null,
+          outcome: comm.outcome || comm.email_status || comm.call_outcome || comm.linkedin_status || null,
+          created_by: user!.id,
+        } as any);
+      }
+
+      // Cross-link to account_activities when account is specified
+      if (comm.account_id) {
+        await supabase.from('account_activities').insert({
+          account_id: comm.account_id,
+          activity_type: comm.communication_type || 'Other',
+          subject: comm.subject || `Campaign ${comm.communication_type || 'Communication'}`,
+          description: comm.notes || comm.body || null,
+          outcome: comm.outcome || comm.email_status || comm.call_outcome || comm.linkedin_status || null,
+          created_by: user!.id,
+        } as any);
+      }
 
       // Cross-link email communications to email_history for activity tracking
       if (comm.communication_type === 'Email' && comm.contact_id) {

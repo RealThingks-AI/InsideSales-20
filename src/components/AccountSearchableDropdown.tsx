@@ -41,11 +41,11 @@ export const AccountSearchableDropdown = ({
         setLoading(true);
         const { data, error } = await supabase
           .from("accounts")
-          .select("id, account_name, region, industry")
-          .order("account_name", { ascending: true });
+          .select("id, company_name, region, industry")
+          .order("company_name", { ascending: true });
 
         if (error) throw error;
-        setAccounts(data || []);
+        setAccounts((data || []).map((d: any) => ({ ...d, account_name: d.company_name })) as any);
       } catch (error) {
         console.error("Error fetching accounts:", error);
         toast({ title: "Error", description: "Failed to fetch accounts", variant: "destructive" });

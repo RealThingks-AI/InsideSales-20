@@ -157,7 +157,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
     try {
       setLoading(true);
       // Fetch from unified action_items table
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('action_items')
         .select('*')
         .eq('module_type', 'deals')
@@ -166,7 +166,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
       if (error) throw error;
       
-      setActionItems(data || []);
+      setActionItems((data || []) as UnifiedActionItem[]);
     } catch (error) {
       toast({
         title: "Error",
@@ -212,7 +212,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
       if (editingItem) {
         // Update existing item in unified table
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('action_items')
           .update({
             title: nextAction.trim(),
@@ -232,7 +232,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
         });
       } else {
         // Create new item in unified table
-        const { data, error } = await supabase
+        const { data, error } = await (supabase as any)
           .from('action_items')
           .insert([actionItemData])
           .select()
@@ -273,7 +273,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
   const handleDelete = async (item: UnifiedActionItem) => {
     try {
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('action_items')
         .delete()
         .eq('id', item.id);

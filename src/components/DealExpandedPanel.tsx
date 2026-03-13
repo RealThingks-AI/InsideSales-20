@@ -398,7 +398,7 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
   const { data: stakeholders = [] } = useQuery({
     queryKey: ["deal-stakeholders", deal.id],
     queryFn: async () => {
-      const { data, error } = await supabase.
+      const { data, error } = await (supabase as any).
       from("deal_stakeholders").
       select("*").
       eq("deal_id", deal.id);
@@ -424,16 +424,16 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
       role,
       created_by: user?.id
     };
-    const { data, error } = await supabase.from("deal_stakeholders").insert(insertData).select().single();
+    const { data, error } = await (supabase as any).from("deal_stakeholders").insert(insertData).select().single();
     if (error) {console.error("Error adding stakeholder:", error);return;}
-    await logStakeholderCreate('deal_stakeholders', data?.id || '', { ...insertData, contact_name: contact.contact_name, deal_name: deal.deal_name });
+    await logStakeholderCreate('deal_stakeholders', (data as any)?.id || '', { ...insertData, contact_name: contact.contact_name, deal_name: deal.deal_name });
     queryClient.invalidateQueries({ queryKey: ["deal-stakeholders", deal.id] });
   };
 
   const handleRemoveContact = async (stakeholderId: string) => {
     const stakeholder = stakeholders?.find(s => s.id === stakeholderId);
     const contactName = stakeholder ? contactNames[stakeholder.contact_id] : undefined;
-    await supabase.from("deal_stakeholders").delete().eq("id", stakeholderId);
+    await (supabase as any).from("deal_stakeholders").delete().eq("id", stakeholderId);
     await logStakeholderDelete('deal_stakeholders', stakeholderId, { ...stakeholder, contact_name: contactName, deal_name: deal.deal_name });
     queryClient.invalidateQueries({ queryKey: ["deal-stakeholders", deal.id] });
   };
@@ -445,10 +445,10 @@ const StakeholdersSection = ({ deal, queryClient }: {deal: Deal;queryClient: Ret
     if (dealAccountId) {
       const { data: account } = await supabase
         .from("accounts")
-        .select("account_name")
+        .select("company_name")
         .eq("id", dealAccountId)
         .single();
-      companyName = account?.account_name || deal.customer_name || null;
+      companyName = (account as any)?.company_name || deal.customer_name || null;
     } else {
       companyName = deal.customer_name || null;
     }
@@ -673,7 +673,7 @@ export const DealExpandedPanel = ({
   const { data: actionItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ["deal-action-items-unified", deal.id],
     queryFn: async () => {
-      const { data, error } = await supabase.
+      const { data, error } = await (supabase as any).
       from("action_items").
       select("*").
       eq("module_type", "deals").
@@ -798,7 +798,7 @@ export const DealExpandedPanel = ({
 
     setIsSavingLog(true);
     try {
-      const { data: insertedItem, error } = await supabase.from("action_items").insert({
+      const { data: insertedItem, error } = await (supabase as any).from("action_items").insert({
         title: actionTitle.trim(),
         module_type: "deals",
         module_id: deal.id,
@@ -812,7 +812,7 @@ export const DealExpandedPanel = ({
       if (error) throw error;
 
       // Log the action item creation with actual ID
-      await logCreate('action_items', insertedItem?.id || '', {
+      await logCreate('action_items', (insertedItem as any)?.id || '', {
         title: actionTitle.trim(),
         module_type: 'deals',
         module_id: deal.id,
@@ -998,7 +998,7 @@ export const DealExpandedPanel = ({
   const handleStatusChange = async (id: string, status: string) => {
     const item = actionItems.find((i) => i.id === id);
     const oldStatus = item?.status;
-    await supabase.from("action_items").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
 
     // Log ALL status changes via useCRUDAudit
     await logUpdate('action_items', id, { status }, { status: oldStatus, title: item?.title, deal_name: deal.deal_name });
@@ -1013,7 +1013,7 @@ export const DealExpandedPanel = ({
   const handleAssignedToChange = async (id: string, userId: string | null) => {
     const item = actionItems.find((i) => i.id === id);
     const oldAssignedTo = item?.assigned_to;
-    await supabase.from("action_items").update({ assigned_to: userId, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ assigned_to: userId, updated_at: new Date().toISOString() }).eq("id", id);
     await logUpdate('action_items', id, { assigned_to: userId }, { assigned_to: oldAssignedTo, title: item?.title, deal_name: deal.deal_name });
     invalidateActionItems();
   };
@@ -1021,14 +1021,14 @@ export const DealExpandedPanel = ({
   const handleDueDateChange = async (id: string, date: string | null) => {
     const item = actionItems.find((i) => i.id === id);
     const oldDueDate = item?.due_date;
-    await supabase.from("action_items").update({ due_date: date, updated_at: new Date().toISOString() }).eq("id", id);
+    await (supabase as any).from("action_items").update({ due_date: date, updated_at: new Date().toISOString() }).eq("id", id);
     await logUpdate('action_items', id, { due_date: date }, { due_date: oldDueDate, title: item?.title, deal_name: deal.deal_name });
     invalidateActionItems();
   };
 
   const handleDeleteActionItem = async (id: string) => {
     const item = actionItems.find((i) => i.id === id);
-    await supabase.from("action_items").delete().eq("id", id);
+    await (supabase as any).from("action_items").delete().eq("id", id);
     await logDelete('action_items', id, { ...item, deal_name: deal.deal_name });
     invalidateActionItems();
   };

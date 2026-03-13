@@ -55,11 +55,11 @@ export const AccountViewModal = ({ open, onOpenChange, accountName }: AccountVie
       const { data, error } = await supabase
         .from("accounts")
         .select("*")
-        .eq("account_name", accountName)
+        .eq("company_name", accountName)
         .limit(1)
         .maybeSingle();
 
-      if (!error && data) setAccount(data);
+      if (!error && data) setAccount({ ...data, account_name: data.company_name } as any);
       setLoading(false);
     };
 

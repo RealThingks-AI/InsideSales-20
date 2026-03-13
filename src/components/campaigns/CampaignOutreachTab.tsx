@@ -26,11 +26,12 @@ const typeIcons: Record<string, any> = {
 
 interface Props {
   campaignId: string;
+  campaignEndDate?: string | null;
   initialTemplateId?: string | null;
   onTemplatePicked?: () => void;
 }
 
-export function CampaignOutreachTab({ campaignId, initialTemplateId, onTemplatePicked }: Props) {
+export function CampaignOutreachTab({ campaignId, campaignEndDate, initialTemplateId, onTemplatePicked }: Props) {
   const { query, addCommunication } = useCampaignCommunications(campaignId);
   const contactsQuery = useCampaignContacts(campaignId);
   const accountsQuery = useCampaignAccounts(campaignId);
@@ -128,6 +129,12 @@ export function CampaignOutreachTab({ campaignId, initialTemplateId, onTemplateP
   };
 
   const handleSendEmail = async () => {
+    // End-date enforcement
+    if (campaignEndDate && new Date(campaignEndDate) < new Date()) {
+      toast({ title: 'Campaign has ended', description: 'Cannot send emails after the campaign end date.', variant: 'destructive' });
+      return;
+    }
+
     if (!sendForm.contact_id || !sendForm.subject || !sendForm.body) {
       toast({ title: 'Please fill in contact, subject and body', variant: 'destructive' });
       return;
@@ -237,7 +244,7 @@ export function CampaignOutreachTab({ campaignId, initialTemplateId, onTemplateP
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">{(c as any).contacts?.contact_name || '—'}</TableCell>
-                  <TableCell className="text-sm">{(c as any).accounts?.account_name || '—'}</TableCell>
+                  <TableCell className="text-sm">{(c as any).accounts?.company_name || '—'}</TableCell>
                   <TableCell className="text-sm">{c.subject || '—'}</TableCell>
                   <TableCell className="text-sm">{statusText}</TableCell>
                   <TableCell className="text-sm">{ownerName}</TableCell>
@@ -277,7 +284,7 @@ export function CampaignOutreachTab({ campaignId, initialTemplateId, onTemplateP
                   <SelectContent>
                     <SelectItem value="">None</SelectItem>
                     {accounts.map(a => (
-                      <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.account_name || a.account_id}</SelectItem>
+                      <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.company_name || a.account_id}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -350,7 +357,7 @@ export function CampaignOutreachTab({ campaignId, initialTemplateId, onTemplateP
                 <SelectContent>
                   <SelectItem value="">None</SelectItem>
                   {accounts.map(a => (
-                    <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.account_name || a.account_id}</SelectItem>
+                    <SelectItem key={a.account_id} value={a.account_id}>{a.accounts?.company_name || a.account_id}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
