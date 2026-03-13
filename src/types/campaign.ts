@@ -26,7 +26,7 @@ export interface CampaignAccount {
   created_at: string;
   // joined fields
   accounts?: {
-    account_name: string;
+    company_name: string;
     industry: string | null;
     country: string | null;
     account_owner: string | null;
