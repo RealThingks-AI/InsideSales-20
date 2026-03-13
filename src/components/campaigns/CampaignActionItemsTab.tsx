@@ -113,7 +113,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
 
   const deleteItem = useMutation({
     mutationFn: async (id: string) => {
-      const { error } = await supabase.from('action_items').delete().eq('id', id);
+      const { error } = await (supabase as any).from('action_items').delete().eq('id', id);
       if (error) throw error;
     },
     onSuccess: () => {

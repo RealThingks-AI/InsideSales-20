@@ -1028,7 +1028,7 @@ export const DealExpandedPanel = ({
 
   const handleDeleteActionItem = async (id: string) => {
     const item = actionItems.find((i) => i.id === id);
-    await supabase.from("action_items").delete().eq("id", id);
+    await (supabase as any).from("action_items").delete().eq("id", id);
     await logDelete('action_items', id, { ...item, deal_name: deal.deal_name });
     invalidateActionItems();
   };
