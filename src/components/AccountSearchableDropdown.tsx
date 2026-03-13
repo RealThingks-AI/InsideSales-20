@@ -41,8 +41,8 @@ export const AccountSearchableDropdown = ({
         setLoading(true);
         const { data, error } = await supabase
           .from("accounts")
-          .select("id, account_name, region, industry")
-          .order("account_name", { ascending: true });
+          .select("id, company_name, region, industry")
+          .order("company_name", { ascending: true });
 
         if (error) throw error;
         setAccounts(data || []);
