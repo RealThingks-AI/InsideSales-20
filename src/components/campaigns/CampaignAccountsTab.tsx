@@ -32,7 +32,7 @@ export function CampaignAccountsTab({ campaignId }: Props) {
   const allAccountsQuery = useQuery({
     queryKey: ['all_accounts_for_campaign'],
     queryFn: async () => {
-      const { data } = await supabase.from('accounts').select('id, account_name, industry, country').order('account_name');
+      const { data } = await supabase.from('accounts').select('id, company_name, industry, country').order('company_name');
       return data || [];
     },
     enabled: addOpen,
