@@ -60,7 +60,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
   const query = useQuery({
     queryKey: ['campaign_action_items', campaignId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await (supabase as any)
         .from('action_items')
         .select('*')
         .eq('module_type', 'campaigns')
@@ -68,7 +68,7 @@ export function CampaignActionItemsTab({ campaignId }: Props) {
         .is('archived_at', null)
         .order('created_at', { ascending: false });
       if (error) throw error;
-      return data;
+      return data as any[];
     },
     enabled: !!user,
   });
