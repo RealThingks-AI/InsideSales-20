@@ -244,7 +244,7 @@ export function CampaignOutreachTab({ campaignId, campaignEndDate, initialTempla
                     </div>
                   </TableCell>
                   <TableCell className="text-sm">{(c as any).contacts?.contact_name || '—'}</TableCell>
-                  <TableCell className="text-sm">{(c as any).accounts?.account_name || '—'}</TableCell>
+                  <TableCell className="text-sm">{(c as any).accounts?.company_name || '—'}</TableCell>
                   <TableCell className="text-sm">{c.subject || '—'}</TableCell>
                   <TableCell className="text-sm">{statusText}</TableCell>
                   <TableCell className="text-sm">{ownerName}</TableCell>
