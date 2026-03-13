@@ -212,7 +212,7 @@ export const DealActionItemsModal = ({ open, onOpenChange, deal }: DealActionIte
 
       if (editingItem) {
         // Update existing item in unified table
-        const { error } = await supabase
+        const { error } = await (supabase as any)
           .from('action_items')
           .update({
             title: nextAction.trim(),
