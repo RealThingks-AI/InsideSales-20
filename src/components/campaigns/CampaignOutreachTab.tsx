@@ -26,6 +26,7 @@ const typeIcons: Record<string, any> = {
 
 interface Props {
   campaignId: string;
+  campaignEndDate?: string | null;
   initialTemplateId?: string | null;
   onTemplatePicked?: () => void;
 }
