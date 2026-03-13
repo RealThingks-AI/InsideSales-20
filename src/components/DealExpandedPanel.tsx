@@ -673,7 +673,7 @@ export const DealExpandedPanel = ({
   const { data: actionItems = [], isLoading: itemsLoading } = useQuery({
     queryKey: ["deal-action-items-unified", deal.id],
     queryFn: async () => {
-      const { data, error } = await supabase.
+      const { data, error } = await (supabase as any).
       from("action_items").
       select("*").
       eq("module_type", "deals").
