@@ -41,27 +41,47 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 const STATUS_BADGE: Record<string, string> = {
-  Draft: "bg-muted text-muted-foreground",
-  Active: "bg-primary/10 text-primary",
-  Paused: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400",
-  Completed: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400",
+  Draft: "bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-300",
+  Active: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
+  Paused: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
+  Completed: "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400",
 };
 
 const STAT_BORDER_COLORS: Record<string, string> = {
-  Total: "border-l-primary",
-  Active: "border-l-green-500",
-  Draft: "border-l-muted-foreground",
+  Total: "border-l-indigo-500",
+  Active: "border-l-emerald-500",
+  Draft: "border-l-slate-400",
   Completed: "border-l-blue-500",
-  Paused: "border-l-yellow-500",
+  Paused: "border-l-amber-500",
 };
 
 const STAT_ICON_BG: Record<string, string> = {
-  Total: "bg-primary/10",
-  Active: "bg-green-100 dark:bg-green-900/30",
-  Draft: "bg-muted",
+  Total: "bg-indigo-100 dark:bg-indigo-900/30",
+  Active: "bg-emerald-100 dark:bg-emerald-900/30",
+  Draft: "bg-slate-100 dark:bg-slate-800",
   Completed: "bg-blue-100 dark:bg-blue-900/30",
-  Paused: "bg-yellow-100 dark:bg-yellow-900/30",
+  Paused: "bg-amber-100 dark:bg-amber-900/30",
 };
+
+const STAT_VALUE_COLORS: Record<string, string> = {
+  Total: "text-indigo-600 dark:text-indigo-400",
+  Active: "text-emerald-600 dark:text-emerald-400",
+  Draft: "text-slate-600 dark:text-slate-400",
+  Completed: "text-blue-600 dark:text-blue-400",
+  Paused: "text-amber-600 dark:text-amber-400",
+};
+
+const TYPE_COLORS: Record<string, string> = {
+  "Cold Outreach": "hsl(220, 80%, 55%)",
+  "Email": "hsl(262, 60%, 55%)",
+  "Nurture": "hsl(142, 60%, 45%)",
+  "Phone + LinkedIn": "hsl(25, 85%, 55%)",
+  "Email + Phone": "hsl(340, 65%, 50%)",
+  "Re-engagement": "hsl(180, 55%, 45%)",
+  "Event": "hsl(45, 90%, 50%)",
+  "Product Launch": "hsl(290, 55%, 55%)",
+};
+
 
 interface AggregateData {
   accountsBycamp: Record<string, number>;
@@ -202,7 +222,7 @@ export function CampaignDashboard({ campaigns, getMartProgress }: CampaignDashbo
                 <s.icon className={`h-4 w-4 ${s.color} shrink-0`} />
               </div>
               <div>
-                <p className="text-2xl font-bold leading-none">{s.value}</p>
+                <p className={`text-2xl font-bold leading-none ${STAT_VALUE_COLORS[s.label] || ""}`}>{s.value}</p>
                 <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
               </div>
             </CardContent>
@@ -257,7 +277,7 @@ export function CampaignDashboard({ campaigns, getMartProgress }: CampaignDashbo
                   <RechartsTooltip formatter={(value: number) => [`${value} campaigns`]} contentStyle={{ fontSize: 12, borderRadius: 8 }} />
                   <Bar dataKey="value" radius={[4, 4, 0, 0]} maxBarSize={40}>
                     {barData.map((entry, i) => (
-                      <Cell key={i} fill="hsl(var(--primary))" opacity={typeFilter && typeFilter !== entry.name ? 0.3 : 0.85} />
+                      <Cell key={i} fill={TYPE_COLORS[entry.name] || "hsl(var(--primary))"} opacity={typeFilter && typeFilter !== entry.name ? 0.3 : 0.9} />
                     ))}
                   </Bar>
                 </BarChart>
@@ -318,6 +338,7 @@ export function CampaignDashboard({ campaigns, getMartProgress }: CampaignDashbo
             <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
               {martCampaigns.map((c) => {
                 const pct = c.mart.total > 0 ? (c.mart.count / c.mart.total) * 100 : 0;
+                const martColor = pct === 100 ? "text-emerald-600 dark:text-emerald-400" : pct > 0 ? "text-amber-600 dark:text-amber-400" : "text-slate-400";
                 return (
                   <div
                     key={c.id}
@@ -325,7 +346,7 @@ export function CampaignDashboard({ campaigns, getMartProgress }: CampaignDashbo
                     onClick={() => { const slug = c.campaign_name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); navigate(`/campaigns/${slug}`); }}
                   >
                     <span className="text-xs truncate flex-1 min-w-0">{c.campaign_name}</span>
-                    <span className="text-[10px] text-muted-foreground shrink-0">{c.mart.count}/{c.mart.total}</span>
+                    <span className={`text-[10px] font-medium shrink-0 ${martColor}`}>{c.mart.count}/{c.mart.total}</span>
                     <Progress value={pct} className="w-14 h-1.5 shrink-0" />
                   </div>
                 );
@@ -394,7 +415,13 @@ export function CampaignDashboard({ campaigns, getMartProgress }: CampaignDashbo
                         <TableCell>
                           <Badge className={`text-[10px] ${STATUS_BADGE[c.status || "Draft"]}`} variant="secondary">{c.status || "Draft"}</Badge>
                         </TableCell>
-                        <TableCell><span className="text-xs">{mart.count}/{mart.total}</span></TableCell>
+                        <TableCell>
+                          {(() => {
+                            const martPct = mart.total > 0 ? (mart.count / mart.total) * 100 : 0;
+                            const mc = martPct === 100 ? "text-emerald-600 dark:text-emerald-400 font-medium" : martPct > 0 ? "text-amber-600 dark:text-amber-400" : "text-muted-foreground";
+                            return <span className={`text-xs ${mc}`}>{mart.count}/{mart.total}</span>;
+                          })()}
+                        </TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{acc}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{con}</TableCell>
                         <TableCell className="text-xs text-right tabular-nums">{com}</TableCell>

@@ -17,6 +17,32 @@ interface EmailRequest {
   recipient_name: string;
   parent_id?: string;
   thread_id?: string;
+  parent_internet_message_id?: string;
+}
+
+/**
+ * Convert plain text body to HTML-safe body.
+ * If the body already contains HTML tags, leave it as-is.
+ * Otherwise, convert newlines to <br> tags.
+ */
+function ensureHtmlBody(body: string): string {
+  if (/<[a-z][\s\S]*>/i.test(body)) {
+    return body;
+  }
+  return body.replace(/\n/g, '<br>');
+}
+
+async function resolveSenderEmail(supabaseClient: any, user: { id: string; email?: string | null }) {
+  const { data: profile } = await supabaseClient
+    .from("profiles")
+    .select('full_name, "Email ID"')
+    .eq("id", user.id)
+    .maybeSingle();
+
+  const profileEmail = profile?.["Email ID"]?.trim();
+  const authEmail = user.email?.trim();
+
+  return profileEmail || authEmail || null;
 }
 
 Deno.serve(async (req) => {
@@ -67,11 +93,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Use logged-in user's email as sender (fall back to shared mailbox)
-    const actualSenderEmail = user.email || azureConfig.senderEmail;
-    console.log(`Sending email as: ${actualSenderEmail} (user: ${user.email}, fallback: ${azureConfig.senderEmail})`);
+    const senderEmail = await resolveSenderEmail(supabaseClient, user);
+    if (!senderEmail) {
+      return new Response(JSON.stringify({
+        success: false,
+        error: "Your user email is not configured. Please update your profile email before sending campaign emails.",
+        errorCode: "USER_EMAIL_NOT_CONFIGURED",
+      }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
-    // Get access token
+    const mailboxEmail = azureConfig.senderEmail;
+    console.log(`Sending campaign email from user mailbox: ${senderEmail} (shared mailbox configured: ${mailboxEmail})`);
+
     let accessToken: string;
     try {
       accessToken = await getGraphAccessToken(azureConfig);
@@ -79,7 +115,6 @@ Deno.serve(async (req) => {
       const errMsg = (err as Error).message;
       console.error("Failed to get Azure access token:", errMsg);
 
-      // Log failed communication
       await supabaseClient.from("campaign_communications").insert({
         campaign_id: payload.campaign_id,
         contact_id: payload.contact_id,
@@ -104,7 +139,7 @@ Deno.serve(async (req) => {
         body: payload.body,
         recipient_email: payload.recipient_email,
         recipient_name: payload.recipient_name,
-        sender_email: actualSenderEmail,
+        sender_email: senderEmail,
         sent_by: user.id,
         contact_id: payload.contact_id,
         account_id: payload.account_id || null,
@@ -122,24 +157,50 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Send email (two-step: draft + send, captures Graph metadata)
+    // If this is a reply, look up the parent's internet_message_id for threading
+    let replyToInternetMessageId: string | undefined;
+    let fallbackConversationId: string | null = null;
+    if (payload.parent_id) {
+      // Use explicitly passed parent_internet_message_id first
+      if (payload.parent_internet_message_id) {
+        replyToInternetMessageId = payload.parent_internet_message_id;
+      }
+
+      const { data: parentComm } = await supabaseClient
+        .from("campaign_communications")
+        .select("internet_message_id, conversation_id")
+        .eq("id", payload.parent_id)
+        .single();
+
+      if (!replyToInternetMessageId && parentComm?.internet_message_id) {
+          replyToInternetMessageId = parentComm.internet_message_id;
+      }
+
+      if (parentComm?.conversation_id) {
+        fallbackConversationId = parentComm.conversation_id;
+      }
+    }
+
+    const htmlBody = ensureHtmlBody(payload.body);
+
     const result = await sendEmailViaGraph(
       accessToken,
-      actualSenderEmail,
+      mailboxEmail,
       payload.recipient_email,
       payload.recipient_name,
       payload.subject,
-      payload.body,
+      htmlBody,
+      senderEmail,
+      replyToInternetMessageId,
     );
 
     const deliveryStatus = result.success ? "sent" : "failed";
-
-    // Use Graph's real IDs instead of random UUIDs
     const messageId = result.internetMessageId || crypto.randomUUID();
-    const threadId = payload.thread_id || null;
+    const threadId = payload.thread_id || payload.parent_id || null;
     const parentId = payload.parent_id || null;
+    const conversationId = result.conversationId || fallbackConversationId;
+    const actualSender = senderEmail;
 
-    // Log to campaign_communications with Graph metadata
     const { data: commRecord, error: commError } = await supabaseClient
       .from("campaign_communications")
       .insert({
@@ -158,7 +219,7 @@ Deno.serve(async (req) => {
         parent_id: parentId,
         graph_message_id: result.graphMessageId || null,
         internet_message_id: result.internetMessageId || null,
-        conversation_id: result.conversationId || null,
+        conversation_id: conversationId,
         owner: user.id,
         created_by: user.id,
         notes: result.error ? `Send error: ${result.error.substring(0, 500)}` : null,
@@ -171,13 +232,12 @@ Deno.serve(async (req) => {
       console.error("Communication log error:", commError);
     }
 
-    // Log to email_history with internet_message_id for cross-referencing
     await supabaseClient.from("email_history").insert({
       subject: payload.subject,
       body: payload.body,
       recipient_email: payload.recipient_email,
       recipient_name: payload.recipient_name,
-      sender_email: actualSenderEmail,
+      sender_email: actualSender,
       sent_by: user.id,
       contact_id: payload.contact_id,
       account_id: payload.account_id || null,
@@ -192,7 +252,8 @@ Deno.serve(async (req) => {
         delivery_status: deliveryStatus,
         communication_id: commRecord?.id,
         message_id: messageId,
-        conversation_id: result.conversationId || null,
+        conversation_id: conversationId,
+        sent_as: actualSender,
         error: result.error || undefined,
         errorCode: result.errorCode || undefined,
       }),

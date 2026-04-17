@@ -1,4 +1,4 @@
-import { useState, Fragment, useMemo } from "react";
+import { useState, Fragment, useMemo, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,24 @@ export function CampaignCommunications({ campaignId, isCampaignEnded }: Props) {
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const [viewMode, setViewMode] = useState<"list" | "threads">("list");
   const [outreachTab, setOutreachTab] = useState<OutreachTab>("all");
+  const [syncingReplies, setSyncingReplies] = useState(false);
+
+  // Auto-poll for email replies every 60 seconds
+  const syncReplies = useCallback(async () => {
+    try {
+      await supabase.functions.invoke("check-email-replies");
+      queryClient.invalidateQueries({ queryKey: ["campaign-communications", campaignId] });
+    } catch (e) {
+      console.error("Reply sync error:", e);
+    }
+  }, [campaignId, queryClient]);
+
+  useEffect(() => {
+    // Initial sync on mount
+    syncReplies();
+    const interval = setInterval(syncReplies, 60_000);
+    return () => clearInterval(interval);
+  }, [syncReplies]);
 
   const { data: communications = [], refetch } = useQuery({
     queryKey: ["campaign-communications", campaignId],
@@ -301,6 +319,36 @@ export function CampaignCommunications({ campaignId, isCampaignEnded }: Props) {
     setEmailComposeOpen(true);
   };
 
+  const handleRefresh = async () => {
+    setSyncingReplies(true);
+
+    try {
+      const { data, error } = await supabase.functions.invoke("check-email-replies");
+      if (error) {
+        throw error;
+      }
+
+      queryClient.invalidateQueries({ queryKey: ["campaign-communications", campaignId] });
+      queryClient.invalidateQueries({ queryKey: ["campaign-contacts", campaignId] });
+      queryClient.invalidateQueries({ queryKey: ["campaign-accounts", campaignId] });
+      await refetch();
+
+      const repliesFound = data?.repliesFound ?? 0;
+      toast({
+        title: repliesFound > 0 ? "Replies synced" : "No new replies found",
+        description: repliesFound > 0 ? `${repliesFound} new reply${repliesFound === 1 ? "" : "ies"} detected.` : undefined,
+      });
+    } catch (err: any) {
+      toast({
+        title: "Reply sync failed",
+        description: err.message || "Unable to sync replies right now.",
+        variant: "destructive",
+      });
+    } finally {
+      setSyncingReplies(false);
+    }
+  };
+
   const handleEmailSent = async (sentContactId?: string) => {
     if (sentContactId) {
       const newStage = "Email Sent";
@@ -452,54 +500,6 @@ export function CampaignCommunications({ campaignId, isCampaignEnded }: Props) {
                     {!isCampaignEnded && c.communication_type === "Email" && c.contact_id && (
                       <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-0.5" onClick={() => openReply(c)}>
                         <Reply className="h-3 w-3" />
-                      </Button>
-                    )}
-                    {!isCampaignEnded && c.communication_type === "Email" && c.contact_id && c.sent_via === "azure" && (
-                      <Button variant="ghost" size="sm" className="h-6 text-[10px] gap-0.5" onClick={async () => {
-                        // Log reply and propagate status to parent + email_history
-                        const contactRecord = campaignContacts.find((cc: any) => cc.contact_id === c.contact_id);
-                        const accountId = contactRecord?.account_id || c.account_id || null;
-                        const { error } = await supabase.from("campaign_communications").insert({
-                          campaign_id: campaignId, contact_id: c.contact_id,
-                          account_id: accountId, communication_type: "Email",
-                          subject: `Re: ${c.subject || ""}`, body: null,
-                          email_status: "Replied", delivery_status: "manual", sent_via: "manual",
-                          parent_id: c.id, thread_id: c.thread_id || c.id,
-                          conversation_id: c.conversation_id || null,
-                          owner: user!.id, created_by: user!.id,
-                          communication_date: new Date().toISOString(),
-                        });
-                        if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-
-                        // Update parent email status to "Replied"
-                        await supabase.from("campaign_communications")
-                          .update({ email_status: "Replied" }).eq("id", c.id);
-
-                        // Update email_history reply fields if internet_message_id exists
-                        if (c.internet_message_id) {
-                          await supabase.from("email_history").update({
-                            replied_at: new Date().toISOString(),
-                            last_reply_at: new Date().toISOString(),
-                          }).eq("internet_message_id", c.internet_message_id);
-                        }
-
-                        // Update campaign_contacts stage to "Responded"
-                        if (c.contact_id) {
-                          const { data: cc } = await supabase.from("campaign_contacts")
-                            .select("stage").eq("campaign_id", campaignId).eq("contact_id", c.contact_id).single();
-                          const currentRank = stageRanks[cc?.stage || "Not Contacted"] ?? 0;
-                          if (stageRanks["Responded"] > currentRank) {
-                            await supabase.from("campaign_contacts").update({ stage: "Responded" })
-                              .eq("campaign_id", campaignId).eq("contact_id", c.contact_id);
-                          }
-                        }
-
-                        queryClient.invalidateQueries({ queryKey: ["campaign-communications", campaignId] });
-                        queryClient.invalidateQueries({ queryKey: ["campaign-contacts", campaignId] });
-                        queryClient.invalidateQueries({ queryKey: ["campaign-accounts", campaignId] });
-                        toast({ title: "Reply logged & status updated" });
-                      }}>
-                        <Mail className="h-3 w-3" /> Log Reply
                       </Button>
                     )}
                     {!isCampaignEnded && c.contacts?.contact_name && (
@@ -758,8 +758,9 @@ export function CampaignCommunications({ campaignId, isCampaignEnded }: Props) {
                 </TabsList>
               </Tabs>
             )}
-            <Button variant="outline" size="sm" onClick={() => refetch()}>
-              <RefreshCw className="h-3.5 w-3.5 mr-1" /> Refresh
+            <Button variant="outline" size="sm" onClick={handleRefresh} disabled={syncingReplies}>
+              <RefreshCw className={`h-3.5 w-3.5 mr-1 ${syncingReplies ? "animate-spin" : ""}`} />
+              {syncingReplies ? "Syncing..." : "Refresh"}
             </Button>
             {!isCampaignEnded && (
               <div className="flex gap-1.5">
