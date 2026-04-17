@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { useSearchParams } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { User, Shield, Mail, Megaphone } from "lucide-react";
+import { User, Shield, Mail } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -10,7 +10,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 const AccountSettingsPage = lazy(() => import("@/components/settings/AccountSettingsPage"));
 const AdminSettingsPage = lazy(() => import("@/components/settings/AdminSettingsPage"));
 const EmailCenterPage = lazy(() => import("@/components/settings/EmailCenterPage"));
-const CampaignSettings = lazy(() => import("@/components/settings/CampaignSettings"));
 
 // Loading skeleton for settings content
 const SettingsContentSkeleton = () => (
@@ -47,12 +46,6 @@ const tabs: SettingsTab[] = [
     id: "email",
     label: "Email Center",
     icon: Mail,
-  },
-  {
-    id: "campaigns",
-    label: "Campaigns",
-    icon: Megaphone,
-    adminOnly: true,
   },
 ];
 
@@ -134,8 +127,6 @@ const Settings = () => {
         return <AdminSettingsPage defaultSection={section} />;
       case "email":
         return <EmailCenterPage defaultTab={section} />;
-      case "campaigns":
-        return <CampaignSettings />;
       default:
         return <AccountSettingsPage />;
     }
