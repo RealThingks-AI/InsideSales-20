@@ -12,7 +12,6 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { countries, regions, countryToRegion } from "@/utils/countryRegionMapping";
-import { useMemo } from "react";
 
 const accountSchema = z.object({
   account_name: z.string().min(1, "Account name is required"),
@@ -108,19 +107,11 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
 
   // Auto-update region when country changes
   const watchedCountry = form.watch("country");
-  const watchedRegion = form.watch("region");
-
   useEffect(() => {
     if (watchedCountry && countryToRegion[watchedCountry]) {
       form.setValue("region", countryToRegion[watchedCountry]);
     }
   }, [watchedCountry, form]);
-
-  // Filter countries based on selected region
-  const filteredCountries = useMemo(() => {
-    if (!watchedRegion) return countries;
-    return countries.filter(c => countryToRegion[c] === watchedRegion);
-  }, [watchedRegion]);
 
   const onSubmit = async (data: AccountFormData) => {
     try {
@@ -203,12 +194,27 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            {/* Row 1: Account Name + Industry */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField control={form.control} name="account_name" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Account Name *</FormLabel>
                   <FormControl><Input placeholder="Company Name" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="phone" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Phone</FormLabel>
+                  <FormControl><Input placeholder="+1 234 567 8900" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="website" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Website</FormLabel>
+                  <FormControl><Input placeholder="www.example.com" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -225,67 +231,7 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
                   <FormMessage />
                 </FormItem>
               )} />
-            </div>
 
-            {/* Row 2: Description (full width) */}
-            <FormField control={form.control} name="description" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl><Textarea placeholder="Additional notes about the account..." className="min-h-20" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )} />
-
-            {/* Row 3: Website + Phone */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="website" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Website</FormLabel>
-                  <FormControl><Input placeholder="www.example.com" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="phone" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Phone</FormLabel>
-                  <FormControl><Input placeholder="+1 234 567 8900" {...field} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            {/* Row 4: Region + Country */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <FormField control={form.control} name="region" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Region</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select region" /></SelectTrigger></FormControl>
-                    <SelectContent>
-                      {regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-
-              <FormField control={form.control} name="country" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Country</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl>
-                    <SelectContent className="max-h-[300px]">
-                      {filteredCountries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )} />
-            </div>
-
-            {/* Row 5: Company Type + Currency + Status */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <FormField control={form.control} name="company_type" render={({ field }) => (
                 <FormItem>
                   <FormLabel>Company Type</FormLabel>
@@ -299,13 +245,26 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
                 </FormItem>
               )} />
 
-              <FormField control={form.control} name="currency" render={({ field }) => (
+              <FormField control={form.control} name="country" render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Currency</FormLabel>
+                  <FormLabel>Country</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
-                    <FormControl><SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger></FormControl>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select country" /></SelectTrigger></FormControl>
                     <SelectContent>
-                      {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      {countries.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <FormField control={form.control} name="region" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Region</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select region" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {regions.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -324,7 +283,28 @@ export const AccountModal = ({ open, onOpenChange, account, onSuccess }: Account
                   <FormMessage />
                 </FormItem>
               )} />
+
+              <FormField control={form.control} name="currency" render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Currency</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl><SelectTrigger><SelectValue placeholder="Select currency" /></SelectTrigger></FormControl>
+                    <SelectContent>
+                      {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
             </div>
+
+            <FormField control={form.control} name="description" render={({ field }) => (
+              <FormItem>
+                <FormLabel>Description</FormLabel>
+                <FormControl><Textarea placeholder="Additional notes about the account..." className="min-h-20" {...field} /></FormControl>
+                <FormMessage />
+              </FormItem>
+            )} />
 
             <div className="flex justify-end gap-2 pt-4">
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>

@@ -6,17 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Clock, AlertTriangle, CheckCircle2, Circle, ChevronDown, Trash2, Copy, Archive } from "lucide-react";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { Clock, AlertTriangle, CheckCircle2, Circle, ChevronDown } from "lucide-react";
 import { format } from "date-fns";
 import { toast } from "sonner";
 import { CampaignModal } from "@/components/campaigns/CampaignModal";
@@ -58,13 +48,11 @@ export default function CampaignDetail() {
   }, [extractedId, isDirectUUID, rawId, campaigns]);
 
   const detail = useCampaignDetail(id);
-  const { updateCampaign, deleteCampaign, archiveCampaign, cloneCampaign } = useCampaigns();
+  const { updateCampaign } = useCampaigns();
   const ownerIds = useMemo(() => [detail.campaign?.owner].filter(Boolean) as string[], [detail.campaign?.owner]);
   const { displayNames } = useUserDisplayNames(ownerIds);
   const [editOpen, setEditOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
-  const [deleteOpen, setDeleteOpen] = useState(false);
-  const [archiveOpen, setArchiveOpen] = useState(false);
   const autoCompleteRef = useRef(false);
 
   // Auto-complete campaign when end date is reached (only if Active)
@@ -201,15 +189,6 @@ export default function CampaignDetail() {
             </Badge>
           )}
           <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>Edit</Button>
-          <Button variant="outline" size="sm" onClick={() => cloneCampaign.mutateAsync(campaign.id).then((newId) => { if (newId) { const slug = (campaign.campaign_name + " (Copy)").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""); navigate(`/campaigns/${slug}`); } })}>
-            <Copy className="h-3.5 w-3.5 mr-1" /> Clone
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => setArchiveOpen(true)}>
-            <Archive className="h-3.5 w-3.5 mr-1" /> Archive
-          </Button>
-          <Button variant="destructive" size="sm" onClick={() => setDeleteOpen(true)}>
-            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
-          </Button>
         </div>
       </div>
 
@@ -287,47 +266,6 @@ export default function CampaignDetail() {
       </div>
 
       <CampaignModal open={editOpen} onClose={() => setEditOpen(false)} campaign={campaign} isMARTComplete={isFullyMARTComplete} />
-
-      <AlertDialog open={deleteOpen} onOpenChange={setDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Campaign</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete "{campaign.campaign_name}" and all associated accounts, contacts, communications, templates, and materials. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={() => {
-                deleteCampaign.mutate(campaign.id, { onSuccess: () => navigate("/campaigns") });
-              }}
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-
-      <AlertDialog open={archiveOpen} onOpenChange={setArchiveOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Archive Campaign</AlertDialogTitle>
-            <AlertDialogDescription>
-              This campaign will be moved to the archive. You can restore it later from the campaigns list.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={() => {
-              archiveCampaign.mutate(campaign.id, { onSuccess: () => navigate("/campaigns") });
-            }}>
-              Archive
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

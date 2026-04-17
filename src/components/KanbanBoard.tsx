@@ -49,6 +49,7 @@ export const KanbanBoard = ({
     regions: [],
     leadOwners: [],
     priorities: [],
+    probabilities: [],
     handoffStatuses: [],
     searchTerm: "",
     probabilityRange: [0, 100],
@@ -162,12 +163,14 @@ export const KanbanBoard = ({
     const regions = Array.from(new Set(deals.map(d => d.region).filter(Boolean)));
     const leadOwners = Array.from(new Set(deals.map(d => d.lead_owner).filter(Boolean)));
     const priorities = Array.from(new Set(deals.map(d => String(d.priority)).filter(p => p !== 'undefined')));
+    const probabilities = Array.from(new Set(deals.map(d => String(d.probability)).filter(p => p !== 'undefined')));
     const handoffStatuses = Array.from(new Set(deals.map(d => d.handoff_status).filter(Boolean)));
     
     return {
       regions,
       leadOwners,
       priorities,
+      probabilities,
       handoffStatuses,
     };
   }, [deals]);
@@ -206,6 +209,7 @@ export const KanbanBoard = ({
       const matchesRegions = filters.regions.length === 0 || filters.regions.includes(deal.region || '');
       const matchesLeadOwners = filters.leadOwners.length === 0 || filters.leadOwners.includes(deal.lead_owner || '');
       const matchesPriorities = filters.priorities.length === 0 || filters.priorities.includes(String(deal.priority || ''));
+      const matchesProbabilities = filters.probabilities.length === 0 || filters.probabilities.includes(String(deal.probability || ''));
       const matchesHandoffStatuses = filters.handoffStatuses.length === 0 || filters.handoffStatuses.includes(deal.handoff_status || '');
       
       // Probability range filter
@@ -213,7 +217,7 @@ export const KanbanBoard = ({
       const matchesProbabilityRange = dealProbability >= filters.probabilityRange[0] && dealProbability <= filters.probabilityRange[1];
       
       return searchMatch && matchesStages && matchesRegions && matchesLeadOwners && 
-             matchesPriorities && matchesHandoffStatuses && matchesProbabilityRange;
+             matchesPriorities && matchesProbabilities && matchesHandoffStatuses && matchesProbabilityRange;
     });
   };
 
@@ -558,10 +562,11 @@ export const KanbanBoard = ({
             availableRegions={availableOptions.regions}
             availableLeadOwners={availableOptions.leadOwners}
             availablePriorities={availableOptions.priorities}
+            availableProbabilities={availableOptions.probabilities}
             availableHandoffStatuses={availableOptions.handoffStatuses}
           />
 
-          {(searchTerm || filters.stages.length > 0 || filters.regions.length > 0 || filters.leadOwners.length > 0 || filters.priorities.length > 0 || filters.handoffStatuses.length > 0) && (
+          {(searchTerm || filters.stages.length > 0 || filters.regions.length > 0 || filters.leadOwners.length > 0 || filters.priorities.length > 0 || filters.probabilities.length > 0 || filters.handoffStatuses.length > 0) && (
             <Button 
               variant="ghost" 
               size="sm"
@@ -572,6 +577,7 @@ export const KanbanBoard = ({
                   regions: [],
                   leadOwners: [],
                   priorities: [],
+                  probabilities: [],
                   handoffStatuses: [],
                   searchTerm: "",
                   probabilityRange: [0, 100],
